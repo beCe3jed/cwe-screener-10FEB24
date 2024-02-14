@@ -57,8 +57,9 @@ Here we see that there is almost every protection on this executeable, but thats
 
 If we use some static analysis... I prefer using ghidra with this binary, it gives us a better disassembler view than cutter.
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-main()
 
+main()
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/format/screenshots/main.png
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 It looks like main() makes two puts() calls before scanf() for our input, then opens and reads in flag.txt, closes the file, and then prints out our input back to the screen.
