@@ -39,9 +39,10 @@ Here we see that there is minimal protections on this 32-bit executeable. A cana
 If we use some static analysis... we see that there is a dbg.main(), dbg.read_in(), and dbg.win()
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 dbg.main()
-
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/win/pwn-win-dbg.main.png
 
 dbg.read_in()
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/win/pwn-win-dbg.read_in.png
 
 dbg.win()
 https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/win/pwn-win-dbg.win.png
