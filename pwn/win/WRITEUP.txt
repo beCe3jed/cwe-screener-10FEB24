@@ -35,5 +35,5 @@ Here we see that there is minimal protections on this 32-bit executeable. A cana
 
 If we use some static analysis... we see that there is a dbg.main(), dbg.read_in(), and dbg.win()
 '''
-
+![win()][pwn-win-dbg.win.png]
 '''
