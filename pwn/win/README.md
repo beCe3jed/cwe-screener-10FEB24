@@ -34,6 +34,11 @@ win: ELF 32-bit LSB executable, Intel 80386, version 1 (GNU/Linux), statically l
 Here we see that there is minimal protections on this 32-bit executeable. A canary is found, but it did not look like any were triggered by our SEG fault.
 
 If we use some static analysis... we see that there is a dbg.main(), dbg.read_in(), and dbg.win()
-'''
-![win()][pwn-win-dbg.win.png]
-'''
+
+dbg.main()
+
+
+dbg.read_in()
+
+dbg.win()
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/win/pwn-win-dbg.win.png
