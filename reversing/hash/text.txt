@@ -1,0 +1,1 @@
+Developing a compiler was a logical move; but in matters like this, you don't run against logic - you run against people who can't change their minds. -Grace Hopper

@@ -1,0 +1,51 @@
+we are allowed 0x13 = 19 bytes
+
+check1: (cannot return 0)
+	its a loop. looks like this:
+		for(int i = 0; *(char*)(&buffer + i) != '\0'; i++){
+		#do nothing
+		}
+		return (i == 0xf)
+
+	so... we need the return statement to be true. Therefore we need i to equal 15 or the loop to run 16 times.
+	Looks like the bounds for the loop is that the length of our input needs to be 15.
+		- our buffer address gets incremented by i (just like an array!)
+		- the (void *) gets parsed into a (char *)
+		- then the address gets dereferenced to whichever value
+	So our input must look somthing like: "ABCDEFGHIJKLMNO\0"
+
+
+
+
+check2: (cannot return 0)
+	looking solely in cutter:
+		i = 0
+		while(TRUE){
+			if (i >= 14)
+				return 1;
+			if (buffers[(i % 3) * 15 + i)] ^ (*(buffer + i))   !=   final[14 - i] ) 
+				break
+			i++
+		}
+
+
+												   |     each index   |
+	breaking it down: buffers[(i % 3) * 15 + i)] ^ (*(int*)(buffer + i))   !=   final[14 - i] 
+
+	there are 3 arrays are being compared! OurInput, buffers, and final. We must XOR final[14 - i] and buffers[(i % 3) * 15 + i]
+
+	Looking thru the binary, we find the two arrays:
+
+	buffers: 	a8 66 e5 a2 af 8d 7e b2 c7 c6 98 95 65 12 ee 45 e8 e4 22 84 c6 e9 b9 aa 61 73 d0 0f b6 a6 de 06 d4 bb e0 96 68 e8 c6 44 88 0a 30 c8 54 
+	final: 		84 e7 cc 30 10 7f fe 40 e2 4d b9 99 9c 18 03
+
+	I copied this into a c file, and XOR'ed each index of these two arrays accordingly. We end up with this:
+
+	MyInput[] = {0xab, 0xf0, 0x48, 0x3b, 0x3d, 0xdb, 0x9c, 0xf9, 0x38, 0xb9, 0x63, 0x3a, 0xa9, 0x51, 0xd0}
+	OR 
+	MyInput = 0xabf0483b3ddb9cf938b9633aa951d0
+
+	I now need two know how to input this value!
+
+	Lets send it as a strip of bytes...
+
