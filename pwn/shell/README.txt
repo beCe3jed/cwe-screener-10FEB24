@@ -41,10 +41,10 @@ Here we see that there is practicall no protections on this executeable, leaving
 If we use some static analysis... we see that there is a dbg.main(), dbg.read_in() and we should be able to find out where this leak is pointing to...
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 dbg.main()
-
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/shell/screenshots/dbg.main.png
 
 dbg.read_in()
-
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/shell/screenshots/read_in.png
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 So it looks like read_in() is a very vulnerable function that contains everything we need to know to pwn this program. Lets see what we got:
   - a vulnerable function read() which has no bounds checking on our input
