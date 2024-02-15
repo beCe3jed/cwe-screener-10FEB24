@@ -1,3 +1,7 @@
+/*
+THIS WAS MY ORIGINAL CODE THAT WAS LATER EDITED IN ORDER TO GET AN EXACT MATCH IN ASSEMBLY. THE IF STATEMENT WAS CHANGED. void_cast.c IS THE FINAL PRODUCT
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
