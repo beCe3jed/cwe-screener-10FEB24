@@ -10,3 +10,8 @@ print(hex(tier2))
 
 myInput = tier2 ^ 0x735	# 0xb884315
 print("Your input should be: " + str(myInput))
+
+'''
+PASSWORD IS 193480725
+FLAG IS: flag{3sNt_a$$embly_sw33T}
+'''
