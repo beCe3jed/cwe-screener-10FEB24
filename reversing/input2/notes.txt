@@ -17,6 +17,7 @@ check1: (cannot return 0)
 
 
 
+
 check2: (cannot return 0)
 	looking solely in cutter:
 		i = 0
@@ -31,6 +32,8 @@ check2: (cannot return 0)
 
 												   |     each index   |
 	breaking it down: buffers[(i % 3) * 15 + i)] ^ (*(int*)(buffer + i))   !=   final[14 - i] 
+
+	There are two static internal arrays, buffers and final.
 
 	there are 3 arrays are being compared! OurInput, buffers, and final. We must XOR final[14 - i] and buffers[(i % 3) * 15 + i]
 
