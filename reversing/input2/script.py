@@ -2,26 +2,32 @@ from pwn import *
 
 context.binary = binary = ELF("./input2")
 
-# p = process()
-
-# p1 = p64(0xf938b9633aa951d0)
-# p2 = p64(0xabf0483b3ddb9c)
-# p3 = b"\xd0\x51\xa9\x3a\x63\xb9\x38\xf9\x9c\xdb\x3d\x3b\x48\xf0\xab\x00"
-
+# p =process()
 p = remote("www.cweaccessionsctf.com", 1405)
 
-p4 = b"\xab\xf0\x48\x3b\x3d\xdb\x9c\xf9\x38\xb9\x63\x3a\xa9\x51\xd0\x00"
+# copied the hardcoded strings over from the binary
+buffer = [0xa8,0x66,0xe5,0xa2,0xaf,0x8d,0x7e,0xb2,0xc7,0xc6,0x98,0x95,0x65,0x12,0xee,0x45,0xe8,0xe4,0x22,0x84,0xc6,0xe9,0xb9,0xaa,0x61,0x73,0xd0,0x0f,0xb6,0xa6,0xde,0x06,0xd4,0xbb,0xe0,0x96,0x68,0xe8,0xc6,0x44,0x88,0x0a,0x30,0xc8,0x54]
+final = [0x84, 0xe7, 0xcc, 0x30, 0x10, 0x7f, 0xfe, 0x40, 0xe2, 0x4d, 0xb9, 0x99, 0x9c, 0x18, 0x03]
+result = []
 
-password = p4
+# we immitate the same hashing algorithm that we saw in the binary
+for i in range(len(final)):
+	char = final[14 - i] ^ buffer[(i%3 * 0xf + i)]
+	char = hex(char)
+	result.append(char)
 
-# file_path = 'password.bin'
+# we now take the hex values and print it as one long string
+print("\nThe string to submit is:\n")
+j = 0
+for byte in result:
+	print (result[j][2:], end = '')
+	j+=1
+print("\n\n")
 
-# with open(file_path, 'wb') as file:
-#     file.write(password)
+# this was added after the fact 
+password = "\xab\xf0\x48\x3b\x3d\xdb\x9c\xf9\x38\xb9\x63\x3a\xa9\x51\xd0\x00"
 
-
-# print(password)
-# print(p3)
+# flag{g3tt!ng_p@sT_$ecuritY_r_w3}
 
 p.sendline(password)
 p.interactive()
