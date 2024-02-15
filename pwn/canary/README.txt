@@ -44,18 +44,18 @@ Aside from that, there are not many mitigations on this binary, but they may not
 If we use some static analysis... we see that there is a main(), read_in() and a win()
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 main()
-
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/canary/screenshots/main.png
 
 read_in()
-
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/canary/screenshots/read_in.png
 
 win()
-
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/canary/screenshots/win.png
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 I personally think ghidra has a much better disassembler for this one:
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ghidra - main()
-
+https://github.com/beCe3jed/cwe-screener-10FEB24/blob/main/pwn/canary/screenshots/ghidra.png
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Our goal is clear. Return execution flow to win(). But in main, we see that the program will exit if the canary gets overwritten, and just finish otherwise.
