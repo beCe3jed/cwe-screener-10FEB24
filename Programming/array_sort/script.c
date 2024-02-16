@@ -100,7 +100,6 @@ int main(void) {
     }
     array[row][(byte % DATA_SIZE)] = dump[byte]; // copies the bytes from the dump approprately
   }
-  if (dump) free(dump);
 
 
   /*  SECTION 3: DATA MANIPULATION */
@@ -116,6 +115,7 @@ int main(void) {
       if(array[free_row]) free(array[free_row]);
   }
   if (array) free(array);
+  if (dump) free(dump);
   printf("Exit succesful!");
   return 0;
 }
