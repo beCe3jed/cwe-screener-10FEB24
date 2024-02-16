@@ -1,0 +1,2 @@
+Connect to www.cweaccessionsctf.com:1455 and see if you can get a flag! I'd recommend you'd script this though, 
+unless you really want to do 500 math problems.
