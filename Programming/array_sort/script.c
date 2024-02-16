@@ -1,16 +1,29 @@
+/*********************************************************************************************************************************************************
+ * THIS PROGRAM READS IN DATA FROM A FILE AND STORES THE DATA IN BLOCKS OF DATA_SIZE (15 BYTES). EACH OF THESE ARRAYS THEN GETS SORTED ACCORDING 
+ * TO THE FIRST TWO BYTES. THE REST OF THE 13 BYTES LATER GET XOR'ED AND RESULT IN A FLAG.
+ * 
+ * 4 MAIN SECTIONS:
+ * 1. READ INTO MEMORY
+ *  - DATA GETS READ INTO A BUFFER AS CHUNKS OF ONE_KILOBYTE AND THEN COPIED INTO A MALLOCED LARGE DUMP ACCORDINGLY 
+ * 2. LOAD INTO 2D ARRAY FORMAT
+ *  - NOW WE WILL COPY DATA INTO AN 2D ARRAY FORMAT SO THAT WE CAN EASILY SORT IT 
+ * 3. MANIPULATE DATA AND PRINT FLAG
+ *  - WE WILL EXECUTE A MERGESORT IN WHICH ONLY THE FIRST TWO BYTES OF EACH SUBARRAY ARE BEING COMPARED, YET THE WHOLE SUBARRAY WILL BE MOVED AROUND AS A SINGLE INDEX
+ * 4. FREE MEMORY
+ *  - WE WILL FREE ALL ALLOCATED MEMORY IN ACCORDANCE WITH STANDARD PROCEDURE
+ * 
+ * REFERENCE:
+ *  -  https://www.youtube.com/watch?v=dDjfaA9Q3n8 
+ *  -  https://www.geeksforgeeks.org/c-program-to-read-contents-of-whole-file/
+**********************************************************************************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// https://www.youtube.com/watch?v=dDjfaA9Q3n8
-// https://www.geeksforgeeks.org/c-program-to-read-contents-of-whole-file/
-
 #define ONE_KILOBYTE 1024
 #define DATA_SIZE 15
 
-int tracker = 0;
-
-void printFlag();
 void merge_sort(unsigned char ** array, int length); 
 void merge_sort_recursion(unsigned char **array, int left, int right);
 void merge_sorted_arrays(unsigned char **array, int left, int mid, int right);
@@ -19,8 +32,9 @@ void xor_pieces(unsigned char** array, int length);
 
 
 int main(void) {
-  FILE *fp = NULL;
 
+  /*  SECTION 1: READING TO MEMORY */
+  FILE *fp = NULL;
   int num_bytes = 0;
   int total_bytes = 0;
   int end_of_dump = 0;
@@ -40,8 +54,6 @@ int main(void) {
 
   while( ((feof(fp) == 0) && ((num_bytes = fread(buffer, sizeof(char), (ONE_KILOBYTE), fp)) != 0)) ){
     total_bytes += num_bytes;
-    // printf("Buff_Mult: %d\n", buffer_multiplier);
-    // printf("Bytes read: %d\n", total_bytes);
     if ( buffer_multiplier == 1) {
       dump = memcpy(dump, buffer, num_bytes);
       dump[total_bytes] = '\0';
@@ -61,69 +73,85 @@ int main(void) {
     perror("Error reading the file.");
     exit(1);
   }
-
-  // TESTING THAT THE DUMP IS CORRECT.
-  for (int i = 0; i < total_bytes; i++){
-    // printf("%02x ", dump[i]);
-  }
-  printf("\n");
+  if (buffer) free(buffer);
+  if (fp) fclose(fp);
 
 
+  /*  SECTION 2: LOADING INTO ARRAY FORMAT */
   // THIS IS TO TRANSFER THE BYTES FROM THE DUMP INTO THE ARRAY FORMAT
   int num_indices = total_bytes/DATA_SIZE; 
   unsigned char **array = (unsigned char**)malloc(sizeof(unsigned char*) * num_indices);
   if (array == NULL) {
-    perror("Error allocating space for the double_pointer array");
+    printf("Error allocating space for the double_pointer array");
     exit(2);
   }
   int row, byte;
   byte = 0;
   row = -1;
   for (byte = 0; byte < total_bytes; byte++) { //  byte by byte in dump
-    // printf("col = %d, mod = %d\n", byte, byte % DATA_SIZE);
 
     if ((byte % DATA_SIZE) == 0) { // initializes each subarray and sets the null terminator
-      // printf("Iterating to row... %d\n", ++row);
       array[++row] = (unsigned char*)malloc((sizeof(unsigned char) * (DATA_SIZE + 1)));
-      // printf("Array[%i]: %s\n", row, array[row]);
       if (array[row] == NULL){
-        perror("Error allocating space for the individual strings of bytes.");
+        printf("Error allocating space for the individual strings of bytes.");
         exit(2);
       }
-      // printf("Allocated correctly\n");
       array[row][DATA_SIZE] = '\0';
-      // printf("\nArray [%d]: ", row);
     }
     array[row][(byte % DATA_SIZE)] = dump[byte]; // copies the bytes from the dump approprately
-    // printf("%02x ", array[row][(byte % DATA_SIZE)]);
   }
+  if (dump) free(dump);
 
 
-  print_array(array, num_indices);
-  printf("\n\n", array);
+  /*  SECTION 3: DATA MANIPULATION */
+  // print_array(array, num_indices);
   merge_sort(array, num_indices);
-  print_array(array, num_indices);
+  // print_array(array, num_indices);
   xor_pieces(array, num_indices);
 
 
 
-
-
-
-
-  if (buffer) free(buffer);
-  if (dump) free(dump);
-  if (fp) fclose(fp);
+  /*  SECTION 4: FREEING MEMORY */
+  for (int free_row = 0; free_row < row; free_row++) { //  byte by byte in dump
+      if(array[free_row]) free(array[free_row]);
+  }
+  if (array) free(array);
   printf("Exit succesful!");
   return 0;
 }
 
-// SIMPLISTIC MERGESORT CALL FOR THE EASE OF THE USER
+/**********************************************************************************************************************************************************
+ * merge_sort()
+ * 
+ * SIMPLISTIC MERGESORT CALL FOR EASE OF READABILITY 
+ * 
+ * THIS FUNCTION STARTS THE SORTING ALGORITHM. BY HAVING ONLY THIS FUNCTION BEING CALLED, WE CAN SIMPLIFY THE 
+ * INITIAL PARAMETERS THAT GET PASSED. CALCULATES THE LEFT, AND RIGHT INDICIES OF THE ARRAY
+ * 
+ * PARAMETERS: 
+ *  - unsigned char **array is the srray to be sorted
+ *  - int length is the length of array 
+ * 
+ * CALLS: merge_sort_recursion()
+***********************************************************************************************************************************************************/
 void merge_sort(unsigned char **array, int length){
   merge_sort_recursion(array, 0, length - 1);
 }
 
-// THE RECURSION PART OF MERGESORT, BREAKS THE ARRAY DOWN INTO ITS SINGULAR INDICES
+/**********************************************************************************************************************************************************
+ * merge_sort_recursion()
+ * 
+ * THE RECURSION PART OF MERGESORT, BREAKS THE ARRAY DOWN INTO ITS SINGULAR INDICES
+ * 
+ * THIS FUNCTION IS THE RECURSIVE PORTION OF THE ALGORITHM THAT CHECKS IF THE SIZE OF THE ARRAY IS GREATER THAN 1, AND CALCULATES MID FOR THE 
+ * CORRESPONDING RECURSIVE CALLS, THEN FINALLY SPLITS THE ARRAY IN HALF UNTIL IT IS SMALLER THAN 1
+ * 
+ * PARAMETERS: 
+ *  - unsigned char **array is the srray to be sorted
+ *  - int left & right are both ends of the array
+ * 
+ * CALLS: merge_sort_recursion(), merge_sorted_arrays()
+**********************************************************************************************************************************************************/
 void merge_sort_recursion(unsigned char **array, int left, int right) {
   if (left < right) {
     int mid = left + (right - left)/2;
@@ -133,24 +161,35 @@ void merge_sort_recursion(unsigned char **array, int left, int right) {
   }
 }
 
-// THE COMPARISON AND MERGENCE OF THE ARRAY
+/**********************************************************************************************************************************************************
+ * merge_sorted_arrays()
+ * 
+ * THE COMPARISON AND MERGENCE OF THE ARRAY
+ * 
+ * THIS FUNCTION IS WHERE EACH ARRAY NOW GETS MERGED WITH ITS PARTNER AND IS SORTED IN LINE AS THEY ARE PLACED IN THE NEWLY SORTED ARRAY.
+ * COPIES OF ARRAYS ARE USED TO GREATLY SPEED UP SORTING AT THE EXPENSE OF MEMORY USAGE
+ * 
+ * PARAMETERS: 
+ *  - unsigned char **array is the srray to be sorted
+ *  - int beg, mid & end correspond to the different indices of the array. Note that mid index is left-preferred in the case of an even-index array
+ * 
+ * CALLS: no calls
+**********************************************************************************************************************************************************/
 void merge_sorted_arrays(unsigned char **array, int beg, int mid, int end) {
+  // PREP VARIABLES
   int left_length = mid - beg + 1;
   int right_length = end - mid;
 
-  // printf("Merge #%d-------\n Begin: %d, Mid: %d, End: %d\n", tracker++, beg, mid, end);
-
-  // allocating the arrays
   unsigned char **left_array = (unsigned char**)malloc(sizeof(unsigned char*)*left_length);
   unsigned char **right_array = (unsigned char**)malloc(sizeof(unsigned char*)*right_length);
   if ((left_array == NULL) || (right_array == NULL)){
-    perror("Error allocating substitute");
+    printf("Error allocating sub-array");
     exit(1);
   }
   for (int i = 0; i < left_length; i++){
     left_array[i] = (unsigned char*)malloc(sizeof(unsigned char)*DATA_SIZE);
     if (left_array[i] == NULL) {
-      perror("Error allocating left array");
+      printf("Error allocating left array");
       exit(1);
     }
     left_array[i] = memcpy(left_array[i], array[beg + i], DATA_SIZE);
@@ -158,47 +197,31 @@ void merge_sorted_arrays(unsigned char **array, int beg, int mid, int end) {
   for (int i = 0; i < right_length; i++){
     right_array[i] = (unsigned char*)malloc(sizeof(unsigned char)*DATA_SIZE);
     if (right_array[i] == NULL) {
-      perror("Error allocating right array");
+      printf("Error allocating right array");
       exit(1);
     }
     right_array[i] = memcpy(right_array[i], array[mid + 1 + i], DATA_SIZE);
   }
 
-
-   // The actual merge
+   // INITIATE MERGE
   int left_val, right_val;
   for(int i = beg, l = 0, r = 0; i <= (end); i++){
+
+    // DECLARE VALUES AND PARSE THEM FROM LITTLE ENDIAN
     if (l < left_length) left_val = (int)left_array[l][0] + ((int)left_array[l][1] << (1*8));
     if(r < right_length) right_val = (int)right_array[r][0] + ((int)right_array[r][1] << (1*8));
-    int dbg_val = (int)array[i][0] + ((int)array[i][1] << (1*8));
-    // printf("Array[%d] was %d... ", i, dbg_val);
 
-    // copy left array value
-    if ( (l < left_length) && ((r >= right_length) || (left_val <= right_val)) ) {
+    // MAKE COMPARISONS
+    if ( (l < left_length) && ((r >= right_length) || (left_val <= right_val)) ) { // copy left array value
       array[i] = memcpy(array[i], left_array[l++], DATA_SIZE);
-      dbg_val = left_val;
-      // printf("*Left* ");
     }
-    //copy right array value
-    else {
+    
+    else {//copy right array value
       array[i] = memcpy(array[i], right_array[r++], DATA_SIZE);
-      dbg_val = right_val;
-      // printf("*Right* ");
     }
-    // printf("now it is Array[%d] = %d\n", i, dbg_val);
   }
 
-  // ALLOWS YOU TO PRINT THE ARRAY AFTER EACH MERGE
-  // printf("(Sorted) Array: ");
-  // for(int i = beg; i <= end; i++) {
-  //   int value = (int)array[i][0] + ((int)array[i][1] << (1*8));
-  //   printf("%d ", value);
-  // }
-  // printf("\n\n");
-
-
-
-  // free the arrays
+  // FREE THE COPIED ARRAYS
   if (left_array && right_array){ 
     for(int i = 0; i < (left_length); i++){
       free(left_array[i]);
@@ -211,10 +234,20 @@ void merge_sorted_arrays(unsigned char **array, int beg, int mid, int end) {
   }
 }
 
-
-void print_array(unsigned char **array, int length){
+/**********************************************************************************************************************************************************
+ * print_array()
+ * 
+ * SIMPLY PRINT THE ARRAY BYTE, BY BYTE. THIS FUNCTION IS USED FOR DEBUGGING
+ * 
+ * PARAMETERS: 
+ *  - unsigned char **array is the array to be printed
+ *  - the num of indicies in the 2D array 
+ * 
+ * CALLS: no calls
+**********************************************************************************************************************************************************/
+void print_array(unsigned char **array, int num_indicies){
   int value;
-  for(int i = 0; i< length; i++){
+  for(int i = 0; i< num_indicies; i++){
     printf("Array[%d]: ", i);
     for(int j = 0; j < DATA_SIZE; j++){
       printf("%02x ", array[i][j]);
@@ -223,8 +256,17 @@ void print_array(unsigned char **array, int length){
   }
 }
 
-
-
+/**********************************************************************************************************************************************************
+ * xor_pieces()
+ * 
+ * XOR'S EACH BYTE IN EACH FLAG-PIECE, AND THEN PRINTS THE RESULTING FLAG. A NEW ARRAY IS ALLOCATED TO HOLD THE FLAG DATA.
+ * 
+ * PARAMETERS: 
+ *  - unsigned char **array is the array to be printed
+ *  - int length is the length of array 
+ * 
+ * CALLS: no calls
+**********************************************************************************************************************************************************/
 void xor_pieces(unsigned char** dataset, int length){
   unsigned char *FLAG = (unsigned char *)malloc(sizeof(unsigned char)*(DATA_SIZE - 2));
   if (FLAG == NULL) {
@@ -249,25 +291,4 @@ void xor_pieces(unsigned char** dataset, int length){
   printf("\n");
 
   if(FLAG) free(FLAG);
-}
-
-
-
-
-
-
-void printFlag(unsigned char *FLAG){
-  unsigned long long int bytes1 = 0xfe7f2ccb8a;
-  unsigned long long int bytes2 = 0x98134dacf1;
-  unsigned long long int result = bytes1 ^ bytes2;
-
-  printf("\nBytes 1: 0x%llx, Bytes 2: 0x%llx, XOR: 0x%llx\n\n", bytes1, bytes2, result);
-
-  printf("Result in chars: %c%c%c%c%c\n", 
-    (char)((result >> (4*8)) & 0xFF), 
-    (char)((result >> (3*8)) & 0xFF), 
-    (char)((result >> (2*8)) & 0xFF),
-    (char)((result >> (1*8)) & 0xFF),
-    (char)(result & 0xFF));
-  return;
 }
