@@ -5,10 +5,12 @@ All problems that were answered are saved in their respective directory.
 
 reversing:
 - README explains how the question was navigated
+- links to screenshots are in the README.
 
 pwn:
 -  README explains how the question was navigated
 -  exploit.py is the script that was run
+-  links to screenshots are in the README.
 
 
 programming:
